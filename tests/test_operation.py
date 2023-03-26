@@ -22,8 +22,8 @@ def test_operation(
     check_strategy_totals(
         strategy,
         total_assets=amount,
-        total_debt=0,
-        total_idle=amount,
+        total_debt=amount,
+        total_idle=0,
         total_supply=amount,
     )
 
@@ -63,26 +63,26 @@ def test_profitable_report(
     check_strategy_totals(
         strategy,
         total_assets=amount,
-        total_debt=0,
-        total_idle=amount,
+        total_debt=amount,
+        total_idle=0,
         total_supply=amount,
     )
 
-    # TODO: Add some code before harvest #2 to simulate earning yield
+    # TODO: Add some code to simulate earning yield
     profit = amount // 100
     asset.transfer(strategy.address, profit, sender=whale)
 
-    # Harvest 2: Realize profit
+    # Realize profit
     chain.mine(10)
     before_pps = strategy.pricePerShare()
 
     strategy.report(sender=keeper)
-
+    print(f"Total assets: {strategy.totalAssets()}")
     check_strategy_totals(
         strategy,
         total_assets=amount + profit,
-        total_debt=0,
-        total_idle=amount + profit,
+        total_debt=amount + profit,
+        total_idle=0,
         total_supply=amount + profit,
     )
 
@@ -91,14 +91,15 @@ def test_profitable_report(
         chain.pending_timestamp + strategy.profitMaxUnlockTime() - 1
     )
     chain.mine(timestamp=chain.pending_timestamp)
-
+    
     check_strategy_totals(
         strategy,
         total_assets=amount + profit,
-        total_debt=0,
-        total_idle=amount + profit,
+        total_debt=amount + profit,
+        total_idle=0,
         total_supply=amount,
     )
+
     assert strategy.pricePerShare() > before_pps
 
 
@@ -115,8 +116,8 @@ def test_triggers(
     check_strategy_totals(
         strategy,
         total_assets=amount,
-        total_debt=0,
-        total_idle=amount,
+        total_debt=amount,
+        total_idle=0,
         total_supply=amount,
     )
 

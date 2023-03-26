@@ -38,8 +38,23 @@ def tokens():
 
 
 @pytest.fixture(scope="session")
-def asset(tokens):
-    yield Contract(tokens["dai"])
+def comets():
+    comets = {
+        "weth": "",
+        "usdc": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+    }
+    yield comets
+
+
+@pytest.fixture(scope="session")
+def comet(comets):
+    # NOTE: adding default contract type because it's not verified
+    return Contract(comets["usdc"])
+
+
+@pytest.fixture(scope="session")
+def asset(comet):
+    yield Contract(comet.baseToken())
 
 
 @pytest.fixture(scope="session")
@@ -70,21 +85,11 @@ def weth_amount(user, weth):
     yield weth_amount
 
 
-# TODO: How to test on chains no library hasn't been deployed to?
-"""
 @pytest.fixture(scope="session")
-def library(daddy):
-    lib = daddy.deploy(project.dependencies["tokenized-strategy"]["test"]['BaseLibrary.sol'])
-    print(lib.address)
-    return lib
-"""
-
-
-@pytest.fixture(scope="session")
-def create_strategy(management, keeper, asset):
+def create_strategy(management, keeper, asset, comet):
     def create_strategy(asset, performanceFee=0):
-        strategy = management.deploy(project.Strategy, asset)
-        strategy = project.IStrategy.at(strategy.address)
+        strategy = management.deploy(project.CompoundV3Lender, asset, comet)
+        strategy = project.ITokenizedStrategy.at(strategy.address)
 
         strategy.setKeeper(keeper, sender=management)
         strategy.setPerformanceFee(performanceFee, sender=management)
