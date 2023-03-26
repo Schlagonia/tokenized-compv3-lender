@@ -27,13 +27,14 @@ contract CompoundV3Lender is BaseStrategy {
     //Fees for the V3 pools if the supply is incentivized
     uint24 public compToEthFee;
     uint24 public ethToAssetFee;
-    address internal constant comp = 
-        0xc00e94Cb662C3520282E6f5717214004A7f26888;
-    address internal constant weth = 
-        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address internal constant comp = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    address internal constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     uint256 public minCompToSell;
 
-    constructor(address _asset, address _comet) BaseStrategy(_asset, "yCompoundV3 Lender") {
+    constructor(
+        address _asset,
+        address _comet
+    ) BaseStrategy(_asset, "yCompoundV3 Lender") {
         initializeCompoundV3Lender(_asset, _comet);
     }
 
@@ -57,14 +58,26 @@ contract CompoundV3Lender is BaseStrategy {
         address _keeper
     ) external returns (address newLender) {
         // Use the cloning logic held withen the Base library.
-        newLender = BaseLibrary.clone(_asset, _name, _management, _performanceFeeRecipient, _keeper);
+        newLender = BaseLibrary.clone(
+            _asset,
+            _name,
+            _management,
+            _performanceFeeRecipient,
+            _keeper
+        );
         // Neeed to cast address to payable since there is a fallback function.
-        CompoundV3Lender(payable(newLender)).initializeCompoundV3Lender(_asset, _comet);
+        CompoundV3Lender(payable(newLender)).initializeCompoundV3Lender(
+            _asset,
+            _comet
+        );
     }
 
     //These will default to 0.
     //Will need to be manually set if asset is incentized before any harvests
-    function setUniFees(uint24 _compToEth, uint24 _ethToAsset) external onlyManagement {
+    function setUniFees(
+        uint24 _compToEth,
+        uint24 _ethToAsset
+    ) external onlyManagement {
         compToEthFee = _compToEth;
         ethToAssetFee = _ethToAsset;
     }
@@ -115,11 +128,11 @@ contract CompoundV3Lender is BaseStrategy {
     function _freeFunds(uint256 _amount) internal override {
         // Need the balance updated
         comet.accrueAccount(address(this));
-        // We dont check available liquidity because we need the tx to 
+        // We dont check available liquidity because we need the tx to
         // revert if there is not enough liquidity so we dont improperly
         // pass a loss on to the user withdrawing.
         comet.withdraw(
-            asset, 
+            asset,
             Math.min(comet.balanceOf(address(this)), _amount)
         );
     }
@@ -148,11 +161,13 @@ contract CompoundV3Lender is BaseStrategy {
 
         // deposit any loose funds
         uint256 looseAsset = ERC20(asset).balanceOf(address(this));
-        if(looseAsset > 0 && !shutdown) {
+        if (looseAsset > 0 && !shutdown) {
             comet.supply(asset, looseAsset);
         }
 
-        _invested = comet.balanceOf(address(this)) + ERC20(asset).balanceOf(address(this));
+        _invested =
+            comet.balanceOf(address(this)) +
+            ERC20(asset).balanceOf(address(this));
     }
 
     function _claimAndSellRewards() internal {
@@ -206,11 +221,9 @@ contract CompoundV3Lender is BaseStrategy {
     // Shutdown will prevent future deposits and cannot be undone.
     function emergencyWithdraw(uint256 _amount) external onlyManagement {
         shutdown = true;
-        if(_amount > 0) {
+        if (_amount > 0) {
             comet.accrueAccount(address(this));
             comet.withdraw(asset, _amount);
         }
     }
-
 }
-

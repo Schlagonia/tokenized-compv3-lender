@@ -91,7 +91,7 @@ def test_profitable_report(
         chain.pending_timestamp + strategy.profitMaxUnlockTime() - 1
     )
     chain.mine(timestamp=chain.pending_timestamp)
-    
+
     check_strategy_totals(
         strategy,
         total_assets=amount + profit,
