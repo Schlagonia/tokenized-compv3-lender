@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.18;
 
-import {AprOracleBase} from "@tokenized-strategy/helpers/AprOracleBase.sol";
+import {AprOracleBase} from "./helpers/AprOracleBase.sol";
 
 import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
 
