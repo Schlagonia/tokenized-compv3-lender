@@ -76,7 +76,9 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
         _setUniFees(base, asset, _ethToAsset);
     }
 
-    function setMinAmountToSell(uint256 _minAmountToSell) external onlyManagement {
+    function setMinAmountToSell(
+        uint256 _minAmountToSell
+    ) external onlyManagement {
         minAmountToSell = _minAmountToSell;
     }
 
