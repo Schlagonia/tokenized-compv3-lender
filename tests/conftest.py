@@ -117,26 +117,6 @@ def deposit(strategy, asset, user, amount):
 
     yield deposit
 
-
-@pytest.fixture(scope="session")
-def check_strategy_totals(strategy, total_assets, total_debt, total_idle):
-    assert pytest.approx(strategy.totalAssets(), abs=2) == total_assets
-    assert pytest.approx(strategy.totalDebt(), abs=2) == total_debt
-    assert pytest.approx(strategy.totalIdle(), abs=2) == total_idle
-
-
-@pytest.fixture(scope="session")
-def check_strategy_totals(strategy, total_assets, total_debt, total_idle, total_supply):
-    assert pytest.approx(strategy.totalAssets(), abs=2) == total_assets
-    assert pytest.approx(strategy.totalDebt(), abs=2) == total_debt
-    assert pytest.approx(strategy.totalIdle(), abs=2) == total_idle
-    # will adjust the accuracy based on token decimals
-    assert (
-        pytest.approx(strategy.totalSupply(), rel=10 ** -(strategy.decimals() * 2 // 3))
-        == total_supply
-    )
-
-
 @pytest.fixture(scope="session")
 def RELATIVE_APPROX():
     yield 1e-5

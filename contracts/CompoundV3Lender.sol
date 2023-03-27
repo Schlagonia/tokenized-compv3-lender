@@ -8,9 +8,11 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
-import {ISwapRouter} from "./interfaces/Uniswap/V3/ISwapRouter.sol";
 
-contract CompoundV3Lender is BaseStrategy {
+// Uniswap V3 Swapper
+import {UniswapV3Swaps} from "@periphery/swaps/UniswapV3Swaps.sol";
+
+contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
     using SafeERC20 for ERC20;
 
     // To check if we shut down the vault
@@ -21,15 +23,7 @@ contract CompoundV3Lender is BaseStrategy {
     // Rewards Stuff
     CometRewards public constant rewardsContract =
         CometRewards(0x1B0e765F6224C21223AeA2af16c1C46E38885a40);
-    //Uniswap v3 router
-    ISwapRouter internal constant router =
-        ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
-    //Fees for the V3 pools if the supply is incentivized
-    uint24 public compToEthFee;
-    uint24 public ethToAssetFee;
     address internal constant comp = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
-    address internal constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    uint256 public minCompToSell;
 
     constructor(
         address _asset,
@@ -41,12 +35,12 @@ contract CompoundV3Lender is BaseStrategy {
     function initializeCompoundV3Lender(address _asset, address _comet) public {
         require(address(comet) == address(0), "already initialized");
         comet = Comet(_comet);
-        require(comet.baseToken() == _asset, "wrong asset");
+        require(Comet(_comet).baseToken() == _asset, "wrong asset");
 
         ERC20(_asset).safeApprove(_comet, type(uint256).max);
-        ERC20(comp).safeApprove(address(router), type(uint256).max);
 
-        minCompToSell = 1e12;
+        // Set the min amount for the swapper to sell
+        minAmountToSell = 1e12;
     }
 
     function cloneCompoundV3Lender(
@@ -78,12 +72,12 @@ contract CompoundV3Lender is BaseStrategy {
         uint24 _compToEth,
         uint24 _ethToAsset
     ) external onlyManagement {
-        compToEthFee = _compToEth;
-        ethToAssetFee = _ethToAsset;
+        _setUniFees(comp, base, _compToEth);
+        _setUniFees(base, asset, _ethToAsset);
     }
 
-    function setMinCompToSell(uint256 _minCompToSell) external onlyManagement {
-        minCompToSell = _minCompToSell;
+    function setMinAmountToSell(uint256 _minAmountToSell) external onlyManagement {
+        minAmountToSell = _minAmountToSell;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -155,8 +149,7 @@ contract CompoundV3Lender is BaseStrategy {
      * amount of 'asset' the strategy currently holds.
      */
     function _totalInvested() internal override returns (uint256 _invested) {
-        comet.accrueAccount(address(this));
-        // Claim and sell any rewards to `asset`.
+        // Claim and sell any rewards to `asset`. Claims will accure account
         _claimAndSellRewards();
 
         // deposit any loose funds
@@ -173,48 +166,10 @@ contract CompoundV3Lender is BaseStrategy {
     function _claimAndSellRewards() internal {
         rewardsContract.claim(address(comet), address(this), true);
 
-        //check that Uni fees are not set
-        if (compToEthFee == 0) return;
-
         uint256 _comp = ERC20(comp).balanceOf(address(this));
 
-        if (_comp > minCompToSell) {
-            if (asset == weth) {
-                ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
-                    .ExactInputSingleParams(
-                        comp, // tokenIn
-                        asset, // tokenOut
-                        compToEthFee, // comp-eth fee
-                        address(this), // recipient
-                        block.timestamp, // deadline
-                        _comp, // amountIn
-                        0, // amountOut
-                        0 // sqrtPriceLimitX96
-                    );
-
-                router.exactInputSingle(params);
-            } else {
-                bytes memory path = abi.encodePacked(
-                    comp, // comp-ETH
-                    compToEthFee,
-                    weth, // ETH-asset
-                    ethToAssetFee,
-                    asset
-                );
-
-                // Proceeds from Comp are not subject to minExpectedSwapPercentage
-                // so they could get sandwiched if we end up in an uncle block
-                router.exactInput(
-                    ISwapRouter.ExactInputParams(
-                        path,
-                        address(this),
-                        block.timestamp,
-                        _comp,
-                        0
-                    )
-                );
-            }
-        }
+        // The uni swapper will do min checks on _comp.
+        _swapFrom(comp, asset, _comp, 0);
     }
 
     // This will shutdown the vault and withdraw any amount desired.

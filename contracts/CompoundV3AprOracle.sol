@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.18;
 
-import {AprOracleBase} from "./helpers/AprOracleBase.sol";
+import {AprOracleBase} from "@periphery/AprOracleBase.sol";
 
 import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
 
 contract CompoundV3AprOracle is AprOracleBase {
     Comet public comet;
-
+    address public baseToken;
     // price feeds for the reward apr calculation, can be updated manually if needed
     address public rewardTokenPriceFeed;
     address public baseTokenPriceFeed;
@@ -34,8 +34,10 @@ contract CompoundV3AprOracle is AprOracleBase {
         require(address(comet) == address(0), "already initialized");
         comet = Comet(_comet);
 
-        uint256 BASE_MANTISSA = comet.baseScale();
-        uint256 BASE_INDEX_SCALE = comet.baseIndexScale();
+        baseToken = Comet(_comet).baseToken();
+
+        uint256 BASE_MANTISSA = Comet(_comet).baseScale();
+        uint256 BASE_INDEX_SCALE = Comet(_comet).baseIndexScale();
 
         // this is needed for reward apr calculations based on decimals
         // of baseToken we scale rewards per second to the base token
@@ -43,7 +45,7 @@ contract CompoundV3AprOracle is AprOracleBase {
         SCALER = (BASE_MANTISSA * 1e18) / BASE_INDEX_SCALE;
 
         // set default price feeds
-        baseTokenPriceFeed = comet.baseTokenPriceFeed();
+        baseTokenPriceFeed = Comet(_comet).baseTokenPriceFeed();
         // default to COMP/USD
         rewardTokenPriceFeed = 0xdbd020CAeF83eFd542f4De03e3cF0C28A4428bd5;
     }
@@ -60,8 +62,11 @@ contract CompoundV3AprOracle is AprOracleBase {
     }
 
     function aprAfterDebtChange(
+        address _asset,
         int256 _delta
     ) external view override returns (uint256) {
+        require(_asset == baseToken, "wrong asset");
+
         uint256 borrows = comet.totalBorrow();
         uint256 supply = comet.totalSupply();
 
