@@ -7,8 +7,8 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {Comet, CometRewards} from "../interfaces/Compound/V3/CompoundV3.sol";
-import {ISwapRouter} from "../interfaces/Uniswap/V3/ISwapRouter.sol";
+import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
+import {ISwapRouter} from "./interfaces/Uniswap/V3/ISwapRouter.sol";
 
 contract CompoundV3Lender is BaseStrategy {
     using SafeERC20 for ERC20;
