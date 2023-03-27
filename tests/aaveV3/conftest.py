@@ -38,23 +38,8 @@ def tokens():
 
 
 @pytest.fixture(scope="session")
-def comets():
-    comets = {
-        "weth": "",
-        "usdc": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
-    }
-    yield comets
-
-
-@pytest.fixture(scope="session")
-def comet(comets):
-    # NOTE: adding default contract type because it's not verified
-    return Contract(comets["usdc"])
-
-
-@pytest.fixture(scope="session")
-def asset(comet):
-    yield Contract(comet.baseToken())
+def asset(tokens):
+    yield Contract(tokens["usdc"])
 
 
 @pytest.fixture(scope="session")
@@ -86,9 +71,9 @@ def weth_amount(user, weth):
 
 
 @pytest.fixture(scope="session")
-def create_strategy(management, keeper, asset, comet):
+def create_strategy(management, keeper, asset):
     def create_strategy(asset, performanceFee=0):
-        strategy = management.deploy(project.CompoundV3Lender, asset, comet)
+        strategy = management.deploy(project.AaveV3Lender, asset)
         strategy = project.ITokenizedStrategy.at(strategy.address)
 
         strategy.setKeeper(keeper, sender=management)

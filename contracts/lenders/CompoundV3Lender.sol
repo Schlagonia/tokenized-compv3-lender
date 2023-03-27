@@ -179,11 +179,11 @@ contract CompoundV3Lender is BaseStrategy {
         uint256 _comp = ERC20(comp).balanceOf(address(this));
 
         if (_comp > minCompToSell) {
-            if (address(asset) == weth) {
+            if (asset == weth) {
                 ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
                     .ExactInputSingleParams(
                         comp, // tokenIn
-                        address(asset), // tokenOut
+                        asset, // tokenOut
                         compToEthFee, // comp-eth fee
                         address(this), // recipient
                         block.timestamp, // deadline
@@ -199,7 +199,7 @@ contract CompoundV3Lender is BaseStrategy {
                     compToEthFee,
                     weth, // ETH-asset
                     ethToAssetFee,
-                    address(asset)
+                    asset
                 );
 
                 // Proceeds from Comp are not subject to minExpectedSwapPercentage
