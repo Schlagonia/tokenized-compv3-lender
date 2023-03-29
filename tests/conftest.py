@@ -95,13 +95,14 @@ def weth_amount(user, weth):
 
 
 @pytest.fixture(scope="session")
-def create_strategy(management, keeper, asset, comet):
+def create_strategy(management, keeper, rewards, asset, comet):
     def create_strategy(asset, _comet=comet, performanceFee=0):
         strategy = management.deploy(
             project.CompoundV3Lender, asset, "YCompound V3", _comet
         )
         strategy = project.ITokenizedStrategy.at(strategy.address)
 
+        strategy.setPerformanceFeeRecipient(rewards, sender=management)
         strategy.setKeeper(keeper, sender=management)
         strategy.setPerformanceFee(performanceFee, sender=management)
 

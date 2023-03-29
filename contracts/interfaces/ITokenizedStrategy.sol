@@ -6,11 +6,11 @@ import "@tokenized-strategy/interfaces/IStrategy.sol";
 interface ITokenizedStrategy is IStrategy {
     function cloneCompoundV3Lender(
         address _asset,
-        address _comet,
         string memory _name,
         address _management,
         address _performanceFeeRecipient,
-        address _keeper
+        address _keeper,
+        address _comet
     ) external returns (address newLender);
 
     function setUniFees(uint24 _compToEth, uint24 _ethToAsset) external;

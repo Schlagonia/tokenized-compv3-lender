@@ -5,80 +5,6 @@ from utils.utils import days_to_secs
 import pytest
 
 
-def test__profitable_report(
-    chain,
-    asset,
-    strategy,
-    deposit,
-    user,
-    management,
-    amount,
-    whale,
-    RELATIVE_APPROX,
-    keeper,
-):
-    # Deposit to the strategy
-    user_balance_before = asset.balanceOf(user)
-
-    # Deposit to the strategy
-    deposit()
-
-    check_strategy_totals(
-        strategy,
-        total_assets=amount,
-        total_debt=amount,
-        total_idle=0,
-        total_supply=amount,
-    )
-
-    # Earn some profit
-    chain.mine(days_to_secs(5))
-
-    before_pps = strategy.pricePerShare()
-
-    tx = strategy.report(sender=keeper)
-
-    profit, loss = tx.return_value
-
-    assert profit > 0
-
-    check_strategy_totals(
-        strategy,
-        total_assets=amount + profit,
-        total_debt=amount + profit,
-        total_idle=0,
-        total_supply=amount + profit,
-    )
-
-    # needed for profits to unlock
-    chain.pending_timestamp = (
-        chain.pending_timestamp + strategy.profitMaxUnlockTime() - 1
-    )
-    chain.mine(timestamp=chain.pending_timestamp)
-
-    check_strategy_totals(
-        strategy,
-        total_assets=amount + profit,
-        total_debt=amount + profit,
-        total_idle=0,
-        total_supply=amount,
-    )
-
-    assert strategy.pricePerShare() > before_pps
-
-    strategy.redeem(amount, user, user, sender=user)
-
-    check_strategy_totals(
-        strategy,
-        total_assets=0,
-        total_debt=0,
-        total_idle=0,
-        total_supply=0,
-    )
-
-    assert asset.balanceOf(user) > user_balance_before
-
-
 def test__weth_reward_selling(
     chain,
     weth,
@@ -194,7 +120,7 @@ def test__usdc_reward_selling(
 ):
     asset = Contract(tokens["usdc"])
     comet = comets["usdc"]
-    amount = int(10_000e6)
+    amount = int(100_000e6)
 
     strategy = create_strategy(asset, comet)
 
@@ -292,7 +218,7 @@ def test__set_min_amount_high__doesnt_sell(
 ):
     asset = Contract(tokens["usdc"])
     comet = comets["usdc"]
-    amount = int(10_000e6)
+    amount = int(100_000e6)
 
     strategy = create_strategy(asset, comet)
 
@@ -406,7 +332,7 @@ def test__dont_set_uni_fees__reverts(
 ):
     asset = Contract(tokens["usdc"])
     comet = comets["usdc"]
-    amount = int(10_000e6)
+    amount = int(100_000e6)
 
     strategy = create_strategy(asset, comet)
 

@@ -117,18 +117,21 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
      * amount of 'asset' the strategy currently holds.
      */
     function _totalInvested() internal override returns (uint256 _invested) {
-        // Claim and sell any rewards to `asset`. Claims will accure account
-        rewardsContract.claim(address(comet), address(this), true);
+        // Only sell and reinvest if we arent shutdown
+        if (!BaseLibrary.isShutdown()) {
+            // Claim and sell any rewards to `asset`. Claims will accure account
+            rewardsContract.claim(address(comet), address(this), true);
 
-        uint256 _comp = ERC20(comp).balanceOf(address(this));
+            uint256 _comp = ERC20(comp).balanceOf(address(this));
 
-        // The uni swapper will do min checks on _comp.
-        _swapFrom(comp, asset, _comp, 0);
+            // The uni swapper will do min checks on _comp.
+            _swapFrom(comp, asset, _comp, 0);
 
-        // deposit any loose funds
-        uint256 looseAsset = ERC20(asset).balanceOf(address(this));
-        if (looseAsset > 0 && !BaseLibrary.isShutdown()) {
-            comet.supply(asset, looseAsset);
+            // deposit any loose funds
+            uint256 looseAsset = ERC20(asset).balanceOf(address(this));
+            if (looseAsset > 0) {
+                comet.supply(asset, looseAsset);
+            }
         }
 
         _invested =
@@ -138,11 +141,11 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
 
     function cloneCompoundV3Lender(
         address _asset,
-        address _comet,
         string memory _name,
         address _management,
         address _performanceFeeRecipient,
-        address _keeper
+        address _keeper,
+        address _comet
     ) external returns (address newLender) {
         // Use the cloning logic held withen the Base library.
         newLender = BaseLibrary.clone(
@@ -177,6 +180,8 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
 
     // This should can be used in conjunction with shutting down the
     // strategy in an emgency to liquidate the strategy.
+    // A report will need to be called post an emergency withdraw to record
+    // the updates in totalDebt and totalIdle
     function emergencyWithdraw(uint256 _amount) external onlyManagement {
         comet.accrueAccount(address(this));
         comet.withdraw(asset, _amount);

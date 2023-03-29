@@ -24,3 +24,18 @@ def check_strategy_totals(strategy, total_assets, total_debt, total_idle, total_
         pytest.approx(strategy.totalSupply(), rel=10 ** -(strategy.decimals() * 2 // 3))
         == total_supply
     )
+
+
+def check_strategy_mins(strategy, min_total_assets, min_total_debt, min_total_idle):
+    assert strategy.totalAssets() >= min_total_assets
+    assert strategy.totalDebt() >= min_total_debt
+    assert strategy.totalIdle() >= min_total_idle
+
+
+def check_strategy_mins(
+    strategy, min_total_assets, min_total_debt, min_total_idle, min_total_supply
+):
+    assert strategy.totalAssets() >= min_total_assets
+    assert strategy.totalDebt() >= min_total_debt
+    assert strategy.totalIdle() >= min_total_idle
+    assert strategy.totalSupply() >= min_total_supply
