@@ -118,6 +118,23 @@ def strategy(asset, create_strategy):
     yield strategy
 
 
+@pytest.fixture(scope="session")
+def create_oracle(comet, management, weth):
+    def create_oracle(c=comet, m=management):
+        oracle = m.deploy(project.CompoundV3AprOracle, "YCompV3 oracle", c)
+
+        if c.baseToken() == weth:
+            oracle.setPriceFeeds(
+                "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+                oracle.rewardTokenPriceFeed(),
+                sender=m,
+            )
+
+        return oracle
+
+    yield create_oracle
+
+
 ############ HELPER FUNCTIONS ############
 
 

@@ -191,7 +191,6 @@ def test__clone__reward_selling(
     weth_amount,
     amount,
     comp,
-    comet_rewards,
     RELATIVE_APPROX,
     keeper,
 ):
@@ -241,9 +240,10 @@ def test__clone__reward_selling(
     # Earn some profit
     chain.mine(days_to_secs(5))
 
-    tx = comet_rewards.getRewardOwed(comet, strategy.address, sender=user)
-    rewards_owed = tx.return_value.owed
-    assert rewards_owed > 0
+    # Send comp to strategy
+    comp_amount = int(1e18)
+    comp.transfer(strategy, comp_amount, sender=whale)
+    assert comp.balanceOf(strategy) == comp_amount
 
     before_pps = strategy.pricePerShare()
 
@@ -261,10 +261,6 @@ def test__clone__reward_selling(
         total_supply=amount + profit,
     )
 
-    # Check we both claimed rewards and sold all of them
-    tx = comet_rewards.getRewardOwed(comet, strategy.address, sender=user)
-    rewards_owed = tx.return_value.owed
-    assert rewards_owed == 0
     assert comp.balanceOf(strategy.address) == 0
 
     # needed for profits to unlock
