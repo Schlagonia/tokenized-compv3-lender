@@ -15,9 +15,6 @@ import {UniswapV3Swaps} from "@periphery/swaps/UniswapV3Swaps.sol";
 contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
     using SafeERC20 for ERC20;
 
-    // To check if we shut down the vault
-    bool public shutdown;
-
     Comet public comet;
 
     // Rewards Stuff
@@ -27,59 +24,29 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
 
     constructor(
         address _asset,
+        string memory _name,
         address _comet
-    ) BaseStrategy(_asset, "yCompoundV3 Lender") {
+    ) BaseStrategy(_asset, _name) {
         initializeCompoundV3Lender(_asset, _comet);
     }
 
     function initializeCompoundV3Lender(address _asset, address _comet) public {
         require(address(comet) == address(0), "already initialized");
         comet = Comet(_comet);
+
         require(Comet(_comet).baseToken() == _asset, "wrong asset");
 
         ERC20(_asset).safeApprove(_comet, type(uint256).max);
 
+        // Set the needed variables for the Uni Swapper
+        // Base will be weth.
+        base = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+        // UniV3 mainnet router.
+        router = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+
         // Set the min amount for the swapper to sell
         minAmountToSell = 1e12;
-    }
-
-    function cloneCompoundV3Lender(
-        address _asset,
-        address _comet,
-        string memory _name,
-        address _management,
-        address _performanceFeeRecipient,
-        address _keeper
-    ) external returns (address newLender) {
-        // Use the cloning logic held withen the Base library.
-        newLender = BaseLibrary.clone(
-            _asset,
-            _name,
-            _management,
-            _performanceFeeRecipient,
-            _keeper
-        );
-        // Neeed to cast address to payable since there is a fallback function.
-        CompoundV3Lender(payable(newLender)).initializeCompoundV3Lender(
-            _asset,
-            _comet
-        );
-    }
-
-    //These will default to 0.
-    //Will need to be manually set if asset is incentized before any harvests
-    function setUniFees(
-        uint24 _compToEth,
-        uint24 _ethToAsset
-    ) external onlyManagement {
-        _setUniFees(comp, base, _compToEth);
-        _setUniFees(base, asset, _ethToAsset);
-    }
-
-    function setMinAmountToSell(
-        uint256 _minAmountToSell
-    ) external onlyManagement {
-        minAmountToSell = _minAmountToSell;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -98,7 +65,6 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
      * to deposit in the yield source.
      */
     function _invest(uint256 _amount) internal override {
-        require(!shutdown, "!shutdown");
         comet.supply(asset, _amount);
     }
 
@@ -152,11 +118,16 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
      */
     function _totalInvested() internal override returns (uint256 _invested) {
         // Claim and sell any rewards to `asset`. Claims will accure account
-        _claimAndSellRewards();
+        rewardsContract.claim(address(comet), address(this), true);
+
+        uint256 _comp = ERC20(comp).balanceOf(address(this));
+
+        // The uni swapper will do min checks on _comp.
+        _swapFrom(comp, asset, _comp, 0);
 
         // deposit any loose funds
         uint256 looseAsset = ERC20(asset).balanceOf(address(this));
-        if (looseAsset > 0 && !shutdown) {
+        if (looseAsset > 0 && !BaseLibrary.isShutdown()) {
             comet.supply(asset, looseAsset);
         }
 
@@ -165,22 +136,49 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
             ERC20(asset).balanceOf(address(this));
     }
 
-    function _claimAndSellRewards() internal {
-        rewardsContract.claim(address(comet), address(this), true);
-
-        uint256 _comp = ERC20(comp).balanceOf(address(this));
-
-        // The uni swapper will do min checks on _comp.
-        _swapFrom(comp, asset, _comp, 0);
+    function cloneCompoundV3Lender(
+        address _asset,
+        address _comet,
+        string memory _name,
+        address _management,
+        address _performanceFeeRecipient,
+        address _keeper
+    ) external returns (address newLender) {
+        // Use the cloning logic held withen the Base library.
+        newLender = BaseLibrary.clone(
+            _asset,
+            _name,
+            _management,
+            _performanceFeeRecipient,
+            _keeper
+        );
+        // Neeed to cast address to payable since there is a fallback function.
+        CompoundV3Lender(payable(newLender)).initializeCompoundV3Lender(
+            _asset,
+            _comet
+        );
     }
 
-    // This will shutdown the vault and withdraw any amount desired.
-    // Shutdown will prevent future deposits and cannot be undone.
+    //These will default to 0.
+    //Will need to be manually set if asset is incentized before any harvests
+    function setUniFees(
+        uint24 _compToEth,
+        uint24 _ethToAsset
+    ) external onlyManagement {
+        _setUniFees(comp, base, _compToEth);
+        _setUniFees(base, asset, _ethToAsset);
+    }
+
+    function setMinAmountToSell(
+        uint256 _minAmountToSell
+    ) external onlyManagement {
+        minAmountToSell = _minAmountToSell;
+    }
+
+    // This should can be used in conjunction with shutting down the
+    // strategy in an emgency to liquidate the strategy.
     function emergencyWithdraw(uint256 _amount) external onlyManagement {
-        shutdown = true;
-        if (_amount > 0) {
-            comet.accrueAccount(address(this));
-            comet.withdraw(asset, _amount);
-        }
+        comet.accrueAccount(address(this));
+        comet.withdraw(asset, _amount);
     }
 }
