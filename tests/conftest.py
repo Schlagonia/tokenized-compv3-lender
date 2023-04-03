@@ -1,12 +1,5 @@
 import pytest
 from ape import Contract, project
-from web3 import Web3
-from web3.middleware import geth_poa_middleware
-from web3.middleware import local_filter_middleware
-
-web3 = Web3(Web3.HTTPProvider())
-web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-web3.middleware_onion.add(local_filter_middleware)
 
 
 @pytest.fixture(scope="session")
