@@ -17,7 +17,6 @@ def test__clone__operation(
     rewards,
     whale,
     weth,
-    weth_amount,
     amount,
     RELATIVE_APPROX,
     keeper,
@@ -77,17 +76,13 @@ def test__clone__profitable_report(
     rewards,
     whale,
     weth,
-    weth_amount,
     amount,
     RELATIVE_APPROX,
     keeper,
 ):
-    if asset == weth:
-        asset = Contract(tokens["usdc"])
-        comet = comets["usdc"]
-        amount = int(100_000e6)
-        comp_fee = 3000
-        asset_fee = 500
+
+    comp_fee = 3000
+    asset_fee = 500
 
     tx = strategy.cloneCompoundV3Lender(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
@@ -178,18 +173,15 @@ def test__clone__reward_selling(
     rewards,
     whale,
     weth,
-    weth_amount,
     amount,
     comp,
+    comp_whale,
     RELATIVE_APPROX,
     keeper,
 ):
-    if asset == weth:
-        asset = Contract(tokens["usdc"])
-        comet = comets["usdc"]
-        amount = int(100_000e6)
-        comp_fee = 3000
-        asset_fee = 500
+
+    comp_fee = 3000
+    asset_fee = 500
 
     tx = strategy.cloneCompoundV3Lender(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
@@ -226,7 +218,7 @@ def test__clone__reward_selling(
 
     # Send comp to strategy
     comp_amount = int(1e18)
-    comp.transfer(strategy, comp_amount, sender=whale)
+    comp.transfer(strategy, comp_amount, sender=comp_whale)
     assert comp.balanceOf(strategy) == comp_amount
 
     before_pps = strategy.pricePerShare()
@@ -288,7 +280,6 @@ def test__clone__shutdown(
     rewards,
     whale,
     weth,
-    weth_amount,
     amount,
     RELATIVE_APPROX,
     keeper,
@@ -361,7 +352,6 @@ def test__clone__access(
     whale,
     weth,
     comp,
-    weth_amount,
     amount,
     RELATIVE_APPROX,
     keeper,

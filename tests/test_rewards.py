@@ -15,6 +15,7 @@ def test__usdc_reward_selling(
     keeper,
     comet_rewards,
     comp,
+    comp_whale,
     comets,
     tokens,
 ):
@@ -50,7 +51,7 @@ def test__usdc_reward_selling(
     chain.mine(days_to_secs(5))
 
     comp_amount = int(1e18)
-    comp.transfer(strategy, comp_amount, sender=whale)
+    comp.transfer(strategy, comp_amount, sender=comp_whale)
     assert comp.balanceOf(strategy) == comp_amount
 
     before_pps = strategy.pricePerShare()
@@ -112,6 +113,7 @@ def test__set_min_amount_high__doesnt_sell(
     create_strategy,
     keeper,
     comp,
+    comp_whale,
     comet,
     comets,
     tokens,
@@ -151,7 +153,7 @@ def test__set_min_amount_high__doesnt_sell(
 
     # Transfer some comp to the strategy
     comp_amount = int(1e18)
-    comp.transfer(strategy, comp_amount, sender=whale)
+    comp.transfer(strategy, comp_amount, sender=comp_whale)
     assert comp.balanceOf(strategy) == comp_amount
 
     before_pps = strategy.pricePerShare()
@@ -225,6 +227,7 @@ def test__dont_set_uni_fees__reverts(
     whale,
     keeper,
     comp,
+    comp_whale,
     comet,
     comets,
     tokens,
@@ -264,7 +267,7 @@ def test__dont_set_uni_fees__reverts(
 
     # Transfer some comp to the strategy
     comp_amount = int(1e18)
-    comp.transfer(strategy, comp_amount, sender=whale)
+    comp.transfer(strategy, comp_amount, sender=comp_whale)
     assert comp.balanceOf(strategy) == comp_amount
 
     before_pps = strategy.pricePerShare()

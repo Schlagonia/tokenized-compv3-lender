@@ -60,6 +60,11 @@ def comp():
 
 
 @pytest.fixture(scope="session")
+def comp_whale():
+    yield Contract("0x45939657d1CA34A8FA39A924B71D28Fe8431e581")
+
+
+@pytest.fixture(scope="session")
 def asset(comet):
     yield Contract(comet.baseToken())
 
