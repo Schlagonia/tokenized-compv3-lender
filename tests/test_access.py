@@ -1,8 +1,12 @@
 import ape
-from ape import Contract, reverts
+from ape import Contract, reverts, project
 from utils.checks import check_strategy_totals
 from utils.utils import days_to_secs
 import pytest
+
+
+def test_deploy(management, comet, asset):
+    strategy = management.deploy(project.CompoundV3Lender, asset, "YCompound V3", comet)
 
 
 def test__set_uni_fees(

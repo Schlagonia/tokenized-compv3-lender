@@ -27,7 +27,6 @@ def test__clone__operation(
         comet = comets["usdc"]
         amount = int(100_000e6)
 
-
     tx = strategy.cloneCompoundV3Lender(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
     )
