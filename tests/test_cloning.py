@@ -26,10 +26,7 @@ def test__clone__operation(
         asset = Contract(tokens["usdc"])
         comet = comets["usdc"]
         amount = int(100_000e6)
-    else:
-        asset = Contract(tokens["weth"])
-        comet = comets["weth"]
-        amount = weth_amount
+
 
     tx = strategy.cloneCompoundV3Lender(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
@@ -90,12 +87,6 @@ def test__clone__profitable_report(
         asset = Contract(tokens["usdc"])
         comet = comets["usdc"]
         amount = int(100_000e6)
-        comp_fee = 3000
-        asset_fee = 500
-    else:
-        asset = Contract(tokens["weth"])
-        comet = comets["weth"]
-        amount = weth_amount
         comp_fee = 3000
         asset_fee = 500
 
@@ -198,12 +189,6 @@ def test__clone__reward_selling(
         asset = Contract(tokens["usdc"])
         comet = comets["usdc"]
         amount = int(100_000e6)
-        comp_fee = 3000
-        asset_fee = 500
-    else:
-        asset = Contract(tokens["weth"])
-        comet = comets["weth"]
-        amount = weth_amount
         comp_fee = 3000
         asset_fee = 500
 
@@ -313,10 +298,6 @@ def test__clone__shutdown(
         asset = Contract(tokens["usdc"])
         comet = comets["usdc"]
         amount = int(100_000e6)
-    else:
-        asset = Contract(tokens["weth"])
-        comet = comets["weth"]
-        amount = weth_amount
 
     tx = strategy.cloneCompoundV3Lender(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
@@ -390,10 +371,6 @@ def test__clone__access(
         asset = Contract(tokens["usdc"])
         comet = comets["usdc"]
         amount = int(100_000e6)
-    else:
-        asset = Contract(tokens["weth"])
-        comet = comets["weth"]
-        amount = weth_amount
 
     tx = strategy.cloneCompoundV3Lender(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management

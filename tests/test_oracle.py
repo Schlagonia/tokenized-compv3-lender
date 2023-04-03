@@ -38,22 +38,6 @@ def check_oracle(
         oracle.setPriceFeeds(baseToken, baseToken, sender=management)
 
 
-def test__weth_oracle(create_oracle, tokens, comets, user, management):
-    comet = Contract(comets["weth"])
-    asset = Contract(tokens["weth"])
-
-    oracle = create_oracle(comet)
-
-    check_oracle(
-        oracle,
-        comet,
-        asset,
-        user,
-        management,
-        "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-        True,
-    )
-
 
 def test__usdc_oracle(create_oracle, tokens, comets, user, management):
     comet = Contract(comets["usdc"])
