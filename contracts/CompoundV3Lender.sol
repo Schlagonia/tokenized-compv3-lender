@@ -10,9 +10,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
 
 // Uniswap V3 Swapper
-import {UniswapV3Swaps} from "@periphery/swaps/UniswapV3Swaps.sol";
+import {UniswapV3Swapper} from "@periphery/swappers/UniswapV3Swapper.sol";
 
-contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
+contract CompoundV3Lender is BaseStrategy, UniswapV3Swapper {
     using SafeERC20 for ERC20;
 
     Comet public comet;
@@ -39,12 +39,11 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swaps {
         ERC20(_asset).safeApprove(_comet, type(uint256).max);
 
         // Set the needed variables for the Uni Swapper
+
         // Base will be weth.
         base = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-
         // UniV3 mainnet router.
         router = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-
         // Set the min amount for the swapper to sell
         minAmountToSell = 1e12;
     }

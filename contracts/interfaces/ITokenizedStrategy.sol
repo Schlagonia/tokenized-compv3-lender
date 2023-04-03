@@ -2,8 +2,9 @@
 pragma solidity 0.8.18;
 
 import "@tokenized-strategy/interfaces/IStrategy.sol";
+import "@periphery/swappers/interfaces/IUniswapV3Swapper.sol";
 
-interface ITokenizedStrategy is IStrategy {
+interface ITokenizedStrategy is IStrategy, IUniswapV3Swapper {
     function cloneCompoundV3Lender(
         address _asset,
         string memory _name,
@@ -14,10 +15,6 @@ interface ITokenizedStrategy is IStrategy {
     ) external returns (address newLender);
 
     function setUniFees(uint24 _compToEth, uint24 _ethToAsset) external;
-
-    function uniFees(address, address) external view returns (uint24);
-
-    function minAmountToSell() external view returns (uint256);
 
     function setMinAmountToSell(uint256 _minAmountToSell) external;
 

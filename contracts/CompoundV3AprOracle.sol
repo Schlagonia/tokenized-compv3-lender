@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.18;
 
-import {AprOracleBase} from "@periphery/AprOracleBase.sol";
+import {AprOracleBase} from "@periphery/AprOracle/AprOracleBase.sol";
 
 import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
 
@@ -19,19 +19,6 @@ contract CompoundV3AprOracle is AprOracleBase {
     uint256 internal SCALER;
 
     constructor(string memory _name, address _comet) AprOracleBase(_name) {
-        init(_comet);
-    }
-
-    function cloneCompoundV3AprOracle(
-        string memory _name,
-        address _comet
-    ) external returns (address _newOracle) {
-        _newOracle = _clone(_name);
-        CompoundV3AprOracle(_newOracle).init(_comet);
-    }
-
-    function init(address _comet) public {
-        require(address(comet) == address(0), "already initialized");
         comet = Comet(_comet);
 
         baseToken = Comet(_comet).baseToken();
