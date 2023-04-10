@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.18;
 
-import {BaseStrategy} from "@tokenized-strategy/BaseStrategy.sol";
+import {BaseTokenizedStrategy} from "@tokenized-strategy/BaseTokenizedStrategy.sol";
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -12,7 +12,7 @@ import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
 // Uniswap V3 Swapper
 import {UniswapV3Swapper} from "@periphery/swappers/UniswapV3Swapper.sol";
 
-contract CompoundV3Lender is BaseStrategy, UniswapV3Swapper {
+contract CompoundV3Lender is BaseTokenizedStrategy, UniswapV3Swapper {
     using SafeERC20 for ERC20;
 
     Comet public comet;
@@ -26,7 +26,7 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swapper {
         address _asset,
         string memory _name,
         address _comet
-    ) BaseStrategy(_asset, _name) {
+    ) BaseTokenizedStrategy(_asset, _name) {
         initializeCompoundV3Lender(_asset, _comet);
     }
 
@@ -117,7 +117,7 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swapper {
      */
     function _totalInvested() internal override returns (uint256 _invested) {
         // Only sell and reinvest if we arent shutdown
-        if (!BaseLibrary.isShutdown()) {
+        if (!TokenizedStrategy.isShutdown()) {
             // Claim and sell any rewards to `asset`. Claims will accure account
             rewardsContract.claim(address(comet), address(this), true);
 
@@ -147,7 +147,7 @@ contract CompoundV3Lender is BaseStrategy, UniswapV3Swapper {
         address _comet
     ) external returns (address newLender) {
         // Use the cloning logic held withen the Base library.
-        newLender = BaseLibrary.clone(
+        newLender = TokenizedStrategy.clone(
             _asset,
             _name,
             _management,

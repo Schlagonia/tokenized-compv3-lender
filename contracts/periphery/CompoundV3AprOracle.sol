@@ -3,7 +3,7 @@ pragma solidity 0.8.18;
 
 import {AprOracleBase} from "@periphery/AprOracle/AprOracleBase.sol";
 
-import {Comet, CometRewards} from "./interfaces/Compound/V3/CompoundV3.sol";
+import {Comet, CometRewards} from "../interfaces/Compound/V3/CompoundV3.sol";
 
 contract CompoundV3AprOracle is AprOracleBase {
     Comet public comet;
