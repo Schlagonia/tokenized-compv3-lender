@@ -35,7 +35,7 @@ def test__clone__operation(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
     )
 
-    strategy = project.ITokenizedStrategy.at(tx.return_value)
+    strategy = project.IStrategyInterface.at(tx.return_value)
 
     strategy.setPerformanceFee(0, sender=management)
 
@@ -103,7 +103,7 @@ def test__clone__profitable_report(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
     )
 
-    strategy = project.ITokenizedStrategy.at(tx.return_value)
+    strategy = project.IStrategyInterface.at(tx.return_value)
 
     strategy.setPerformanceFee(0, sender=management)
 
@@ -211,7 +211,7 @@ def test__clone__reward_selling(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
     )
 
-    strategy = project.ITokenizedStrategy.at(tx.return_value)
+    strategy = project.IStrategyInterface.at(tx.return_value)
 
     strategy.setPerformanceFee(0, sender=management)
 
@@ -322,7 +322,7 @@ def test__clone__shutdown(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
     )
 
-    strategy = project.ITokenizedStrategy.at(tx.return_value)
+    strategy = project.IStrategyInterface.at(tx.return_value)
 
     asset.transfer(user, amount, sender=whale)
 
@@ -399,7 +399,7 @@ def test__clone__access(
         asset, "yTest Clone", management, rewards, keeper, comet, sender=management
     )
 
-    strategy = project.ITokenizedStrategy.at(tx.return_value)
+    strategy = project.IStrategyInterface.at(tx.return_value)
 
     asset.transfer(user, amount, sender=whale)
 

@@ -4,7 +4,7 @@ pragma solidity 0.8.18;
 import "@tokenized-strategy/interfaces/IStrategy.sol";
 import "@periphery/swappers/interfaces/IUniswapV3Swapper.sol";
 
-interface ITokenizedStrategy is IStrategy, IUniswapV3Swapper {
+interface IStrategyInterface is IStrategy, IUniswapV3Swapper {
     function cloneCompoundV3Lender(
         address _asset,
         string memory _name,

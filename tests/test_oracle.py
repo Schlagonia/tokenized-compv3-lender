@@ -27,7 +27,7 @@ def check_oracle(
     else:
         assert reward_apr == 0
 
-    with reverts("Not today MoFo"):
+    with reverts("Ownable: caller is not the owner"):
         oracle.setPriceFeeds(
             oracle.baseTokenPriceFeed(), oracle.rewardTokenPriceFeed(), sender=user
         )

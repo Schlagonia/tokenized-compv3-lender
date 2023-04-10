@@ -100,7 +100,7 @@ def create_strategy(management, keeper, rewards, asset, comet):
         strategy = management.deploy(
             project.CompoundV3Lender, asset, "YCompound V3", _comet
         )
-        strategy = project.ITokenizedStrategy.at(strategy.address)
+        strategy = project.IStrategyInterface.at(strategy.address)
 
         strategy.setPerformanceFeeRecipient(rewards, sender=management)
         strategy.setKeeper(keeper, sender=management)
