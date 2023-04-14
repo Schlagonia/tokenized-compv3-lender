@@ -279,6 +279,7 @@ def test__set_min_amount_high__doesnt_sell(
     )
     chain.mine(timestamp=chain.pending_timestamp)
 
+
     check_strategy_totals(
         strategy,
         total_assets=amount + profit,
